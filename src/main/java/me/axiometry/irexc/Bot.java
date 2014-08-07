@@ -42,9 +42,15 @@ public class Bot extends User {
 	private final EventBus eventBus;
 	private final ParserManager parser;
 
-	protected Bot(Configuration config) {
+	protected <T extends GenericConfiguration<T, S>, S extends Bot> Bot(GenericConfiguration<T, S> config) {
 		super(config.nickname);
 		super.setUsername(config.username);
+
+		if(config.nickname == null || config.nickname.isEmpty())
+			throw new IllegalStateException("missing nickname");
+		if(config.host == null || config.host.isEmpty())
+			throw new IllegalStateException("missing host");
+		
 		realname = config.realname;
 
 		host = config.host;
@@ -119,7 +125,8 @@ public class Bot extends User {
 	}
 
 	public final boolean sendMessage(MessageTarget target, String message, boolean ctcp) {
-		return sendRaw("PRIVMSG " + target.getName() + " :" + (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : ""));
+		message =(ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
+		return target.sendMessage(this, message);
 	}
 
 	public final boolean sendNotice(MessageTarget target, String message) {
@@ -127,7 +134,8 @@ public class Bot extends User {
 	}
 
 	public final boolean sendNotice(MessageTarget target, String message, boolean ctcp) {
-		return sendRaw("NOTICE " + target.getName() + " :" + (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : ""));
+		message =(ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
+		return target.sendNotice(this, message);
 	}
 
 	public synchronized final boolean sendRaw(String raw) {
@@ -152,6 +160,16 @@ public class Bot extends User {
 			handleIOError(exception);
 			return false;
 		}
+	}
+	
+	public MessageTarget determineReturnTarget(MessageSource from, MessageTarget to) {
+		if(to instanceof Channel)
+			return to;
+		else if(from instanceof MessageTarget)
+			return (MessageTarget) from;
+		else if(to.equals(this))
+			return new UnknownMessageTarget();
+		return to;
 	}
 
 	private void parseLine(String line) {
@@ -374,12 +392,21 @@ public class Bot extends User {
 	public boolean equals(Object obj) {
 		return obj instanceof Bot && super.equals(obj);
 	}
-
-	public static Configuration configure() {
-		return new Configuration();
+	
+	public static final class Configuration extends GenericConfiguration<Configuration, Bot> {
+		public Configuration() {
+			super(Configuration.class);
+		}
+		
+		@Override
+		public Bot create() {
+			return new Bot(this);
+		}
 	}
 
-	public static final class Configuration {
+	protected static abstract class GenericConfiguration<T extends GenericConfiguration<T, S>, S extends Bot> {
+		protected final Class<T> type;
+		
 		private String nickname, username, realname;
 
 		private String host;
@@ -393,7 +420,11 @@ public class Bot extends User {
 		private EventBus eventBus = new ConcurrentEventBus();
 		private ParserManager parser;
 
-		private Configuration() {
+		protected GenericConfiguration(Class<T> type) {
+			if(!type.equals(getClass()))
+				throw new IllegalArgumentException();
+			this.type = type;
+			
 			parser = new ConcurrentParserManager(new RegexParserManager());
 			parser.bind(UserMessageEvent.class, new RegexUserMessageParser());
 			parser.bind(JoinMessageEvent.class, new RegexJoinMessageParser());
@@ -407,81 +438,81 @@ public class Bot extends User {
 			parser.bind(ServerMessageEvent.class, new RegexServerMessageParser());
 		}
 
-		public Configuration nickname(String nickname) {
+		public T nickname(String nickname) {
 			if(nickname == null)
 				throw new NullPointerException("nickname is null");
 			this.nickname = nickname;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration username(String username) {
+		public T username(String username) {
 			if(username != null && username.isEmpty())
 				username = null;
 			this.username = username;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration realname(String realname) {
+		public T realname(String realname) {
 			if(realname != null && realname.isEmpty())
 				realname = null;
 			this.realname = realname;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration host(String host) {
+		public T host(String host) {
 			if(host == null)
 				throw new NullPointerException("host is null");
 			this.host = host;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration port(int port) {
+		public T port(int port) {
 			if(port < 0 || port > 65535)
 				throw new IllegalArgumentException("port out of range");
 			this.port = port;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration connectionFactory(ConnectionFactory connectionFactory) {
+		public T connectionFactory(ConnectionFactory connectionFactory) {
 			if(connectionFactory == null)
 				throw new NullPointerException("connectionFactory is null");
 			this.connectionFactory = connectionFactory;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration authenticator(Authenticator authenticator) {
+		public T authenticator(Authenticator authenticator) {
 			this.authenticator = authenticator;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration charset(Charset charset) {
+		public T charset(Charset charset) {
 			if(charset == null)
 				throw new NullPointerException("charset is null");
 			this.charset = charset;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration lineEnding(String lineEnding) {
+		public T lineEnding(String lineEnding) {
 			if(lineEnding == null)
 				throw new NullPointerException("lineEnding is null");
 			if(lineEnding.isEmpty())
 				throw new IllegalArgumentException("lineEnding is empty");
 			this.lineEnding = lineEnding;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration eventBus(EventBus eventBus) {
+		public T eventBus(EventBus eventBus) {
 			if(eventBus == null)
 				throw new NullPointerException("eventBus is null");
 			this.eventBus = eventBus;
-			return this;
+			return type.cast(this);
 		}
 
-		public Configuration parser(ParserManager parser) {
+		public T parser(ParserManager parser) {
 			if(parser == null)
 				throw new NullPointerException("parser is null");
 			this.parser = parser;
-			return this;
+			return type.cast(this);
 		}
 
 		public String getNickname() {
@@ -528,13 +559,7 @@ public class Bot extends User {
 			return parser;
 		}
 
-		public Bot create() {
-			if(nickname == null || nickname.isEmpty())
-				throw new IllegalStateException("missing nickname");
-			if(host == null || host.isEmpty())
-				throw new IllegalStateException("missing host");
-			return new Bot(this);
-		}
+		public abstract S create();
 	}
 
 	private final class ProcessThread implements Runnable {
