@@ -45,6 +45,20 @@ public final class Channel implements MessageTarget {
 	public User[] getUsers() {
 		return users.toArray(new User[0]);
 	}
+	
+	@Override
+	public boolean sendMessage(Bot bot, String message) {
+		if(!containsUser(bot))
+			return false;
+		return bot.sendRaw("PRIVMSG " + name + ": " + message);
+	}
+	
+	@Override
+	public boolean sendNotice(Bot bot, String message) {
+		if(!containsUser(bot))
+			return false;
+		return bot.sendRaw("NOTICE " + name + ": " + message);
+	}
 
 	@Override
 	public int hashCode() {
