@@ -1,7 +1,5 @@
 package me.axiometry.irexc.parsing;
 
-import me.axiometry.irexc.Bot;
-
 public class UnknownMessageTarget implements MessageTarget {
 	private final String name;
 	
@@ -14,12 +12,12 @@ public class UnknownMessageTarget implements MessageTarget {
 	}
 	
 	@Override
-	public boolean sendMessage(Bot bot, String message) {
+	public boolean sendMessage(String message) {
 		return false;
 	}
 	
 	@Override
-	public boolean sendNotice(Bot bot, String message) {
+	public boolean sendNotice(String message) {
 		return false;
 	}
 

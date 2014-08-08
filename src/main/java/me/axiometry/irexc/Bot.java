@@ -43,7 +43,7 @@ public class Bot extends User {
 	private final ParserManager parser;
 
 	protected <T extends GenericConfiguration<T, S>, S extends Bot> Bot(GenericConfiguration<T, S> config) {
-		super(config.nickname);
+		super(null, config.nickname);
 		super.setUsername(config.username);
 
 		if(config.nickname == null || config.nickname.isEmpty())
@@ -125,8 +125,8 @@ public class Bot extends User {
 	}
 
 	public final boolean sendMessage(MessageTarget target, String message, boolean ctcp) {
-		message =(ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
-		return target.sendMessage(this, message);
+		message = (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
+		return target.sendMessage(message);
 	}
 
 	public final boolean sendNotice(MessageTarget target, String message) {
@@ -134,8 +134,8 @@ public class Bot extends User {
 	}
 
 	public final boolean sendNotice(MessageTarget target, String message, boolean ctcp) {
-		message =(ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
-		return target.sendNotice(this, message);
+		message = (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
+		return target.sendNotice(message);
 	}
 
 	public synchronized final boolean sendRaw(String raw) {
@@ -318,14 +318,14 @@ public class Bot extends User {
 			if(user != null)
 				return user;
 		}
-		return new User(nickname);
+		return new User(this, nickname);
 	}
 
 	@Override
 	public Channel getChannel(String name) {
 		Channel channel = super.getChannel(name);
 		if(channel == null)
-			return new Channel(name);
+			return new Channel(this, name);
 		return channel;
 	}
 
@@ -381,6 +381,11 @@ public class Bot extends User {
 
 	public final EventBus getEventBus() {
 		return eventBus;
+	}
+	
+	@Override
+	public Bot getBot() {
+		return this;
 	}
 
 	@Override

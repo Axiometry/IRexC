@@ -5,11 +5,14 @@ import java.util.*;
 import me.axiometry.irexc.parsing.*;
 
 public class User implements MessageSource, MessageTarget {
+	@Deprecated	private final Bot bot;
+	
 	protected String nickname, username, hostname;
 	private final Set<Channel> channels;
 	private final List<UserListener> listeners;
 
-	User(String nickname) {
+	User(Bot bot, String nickname) {
+		this.bot = bot;
 		this.nickname = nickname;
 
 		channels = Collections.synchronizedSet(new HashSet<Channel>());
@@ -96,13 +99,17 @@ public class User implements MessageSource, MessageTarget {
 	}
 	
 	@Override
-	public boolean sendMessage(Bot bot, String message) {
-		return bot.sendRaw("PRIVMSG " + nickname + " :" + message);
+	public boolean sendMessage(String message) {
+		return getBot().sendRaw("PRIVMSG " + nickname + " :" + message);
 	}
 	
 	@Override
-	public boolean sendNotice(Bot bot, String message) {
-		return bot.sendRaw("NOTICE " + nickname + " :" + message);
+	public boolean sendNotice(String message) {
+		return getBot().sendRaw("NOTICE " + nickname + " :" + message);
+	}
+	
+	public Bot getBot() {
+		return bot;
 	}
 
 	@Override

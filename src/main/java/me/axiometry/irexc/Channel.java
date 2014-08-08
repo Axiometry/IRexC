@@ -5,10 +5,13 @@ import java.util.*;
 import me.axiometry.irexc.parsing.MessageTarget;
 
 public final class Channel implements MessageTarget {
+	private final Bot bot;
+	
 	private final String name;
 	private final Set<User> users;
 
-	Channel(String name) {
+	Channel(Bot bot, String name) {
+		this.bot = bot;
 		this.name = name;
 
 		users = Collections.synchronizedSet(new HashSet<User>());
@@ -45,19 +48,19 @@ public final class Channel implements MessageTarget {
 	public User[] getUsers() {
 		return users.toArray(new User[0]);
 	}
-	
+
 	@Override
-	public boolean sendMessage(Bot bot, String message) {
-		if(!containsUser(bot))
-			return false;
+	public boolean sendMessage(String message) {
 		return bot.sendRaw("PRIVMSG " + name + " :" + message);
 	}
-	
+
 	@Override
-	public boolean sendNotice(Bot bot, String message) {
-		if(!containsUser(bot))
-			return false;
+	public boolean sendNotice(String message) {
 		return bot.sendRaw("NOTICE " + name + " :" + message);
+	}
+	
+	public Bot getBot() {
+		return bot;
 	}
 
 	@Override
