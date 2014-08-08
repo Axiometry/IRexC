@@ -97,12 +97,12 @@ public class User implements MessageSource, MessageTarget {
 	
 	@Override
 	public boolean sendMessage(Bot bot, String message) {
-		return bot.sendRaw("PRIVMSG " + nickname + ": " + message);
+		return bot.sendRaw("PRIVMSG " + nickname + " :" + message);
 	}
 	
 	@Override
 	public boolean sendNotice(Bot bot, String message) {
-		return bot.sendRaw("NOTICE " + nickname + ": " + message);
+		return bot.sendRaw("NOTICE " + nickname + " :" + message);
 	}
 
 	@Override
