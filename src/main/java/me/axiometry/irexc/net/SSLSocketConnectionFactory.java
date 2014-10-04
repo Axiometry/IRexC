@@ -3,17 +3,19 @@ package me.axiometry.irexc.net;
 import java.io.*;
 import java.net.Socket;
 
-public class SocketConnectionFactory implements ConnectionFactory {
+import javax.net.ssl.*;
+
+public class SSLSocketConnectionFactory implements ConnectionFactory {
 	@Override
 	public Connection createConnection(String host, int port) throws IOException {
-		return new SocketConnection(host, port);
+		return new SSLSocketConnection(host, port);
 	}
 
-	private final class SocketConnection implements Connection {
+	private final class SSLSocketConnection implements Connection {
 		private final Socket socket;
 
-		public SocketConnection(String host, int port) throws IOException {
-			socket = new Socket(host, port);
+		public SSLSocketConnection(String host, int port) throws IOException {
+            socket = SSLSocketFactory.getDefault().createSocket(host, port);
 		}
 
 		@Override
