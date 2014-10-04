@@ -120,24 +120,6 @@ public class Bot extends User {
 		}
 	}
 
-	public final boolean sendMessage(MessageTarget target, String message) {
-		return sendMessage(target, message, false);
-	}
-
-	public final boolean sendMessage(MessageTarget target, String message, boolean ctcp) {
-		message = (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
-		return target.sendMessage(message);
-	}
-
-	public final boolean sendNotice(MessageTarget target, String message) {
-		return sendNotice(target, message, false);
-	}
-
-	public final boolean sendNotice(MessageTarget target, String message, boolean ctcp) {
-		message = (ctcp ? "\u0001" : "") + message + (ctcp ? "\u0001" : "");
-		return target.sendNotice(message);
-	}
-
 	public synchronized final boolean sendRaw(String raw) {
 		if(!connected.get())
 			throw new IllegalStateException("Not connected");

@@ -89,7 +89,7 @@ public class CommandBot extends Bot {
 				CommandContext context = new CommandContext(command, event.getSource(), event.getTarget(), arguments);
 				try {
 					if(!execute(context))
-						sendMessage(determineReturnTarget(context), "Unknown command.");
+						determineReturnTarget(context).sendMessage("Unknown command.");
 				} catch(CommandException exception) {
 					handleException(context, exception);
 				}
@@ -107,7 +107,7 @@ public class CommandBot extends Bot {
 				message += " / Error: " + cause.getCause();
 		}
 		
-		sendMessage(determineReturnTarget(context), message);
+		determineReturnTarget(context).sendMessage(message);
 	}
 	
 	public MessageTarget determineReturnTarget(CommandContext context) {

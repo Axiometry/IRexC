@@ -15,7 +15,7 @@ public class NickservAuthenticator extends AbstractAuthenticator {
 	@EventHandler
 	public synchronized void onServerMessage(ServerMessageEvent event) {
 		if(isRegistered() && !hasIdentified() && event.getCode() == ServerMessageEvent.RPL_ENDOFMOTD) {
-			getBot().sendMessage(getBot().getUser("NickServ"), "identify " + password);
+			getBot().getUser("NickServ").sendMessage("identify " + password);
 
 			onAuthenticationSuccess();
 		}
