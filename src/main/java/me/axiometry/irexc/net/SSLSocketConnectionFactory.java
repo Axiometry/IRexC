@@ -15,7 +15,7 @@ public class SSLSocketConnectionFactory implements ConnectionFactory {
 		private final Socket socket;
 
 		public SSLSocketConnection(String host, int port) throws IOException {
-            socket = SSLSocketFactory.getDefault().createSocket(host, port);
+			socket = SSLSocketFactory.getDefault().createSocket(host, port);
 		}
 
 		@Override
