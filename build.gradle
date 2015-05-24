@@ -1,11 +1,17 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-sourceCompatibility = 1.7
+group = 'me.axiometry.irexc'
 version = '1.0'
+description = 'Simple Java IRC Bot'
+
+compileJava {
+	sourceCompatibility = 1.7
+	targetCompatibility = 1.7
+}
 
 eclipse.classpath {
-	downloadSources=true
+	downloadSources = true
 }
 
 repositories {
@@ -15,3 +21,14 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.+'
 }
+
+task pack(type: Jar) {
+	manifest {
+		attributes 'Implementation-Title': project.name,
+				   'Implementation-Version': project.version
+	}
+	baseName = project.name + '-all'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+}
+tasks.assemble.dependsOn(pack)
